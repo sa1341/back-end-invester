@@ -12,6 +12,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -145,4 +146,20 @@ public class InvestmentItemTests {
         LocalDateTime localDateTime = LocalDateTime.parse(currentDate, dateTimeFormatter);
         return localDateTime;
     }
+
+
+    @Test
+    @DisplayName("투자금액 줄여보기(멀티스레드) 테스트")
+    public void 투자금액_줄이기_테스트() throws Exception {
+        //given
+        
+
+
+
+
+        //when
+
+        //then
+     }
+
 }

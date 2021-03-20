@@ -65,4 +65,11 @@ public class Item extends BaseTimeEntity {
     private void changeItemStatus(ItemStatus itemStatus) {
         this.itemStatus = itemStatus;
     }
+
+    public Long decreaseTotalAmount(Long price) {
+        if (this.total_investing_amount - price < 0) {
+            throw new IllegalArgumentException("가격이 너무 부족해");
+        }
+        return this.total_investing_amount -= price;
+    }
 }

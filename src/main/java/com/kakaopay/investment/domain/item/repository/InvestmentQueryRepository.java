@@ -4,11 +4,13 @@ import com.kakaopay.investment.domain.item.dto.InvestmentItemDateRes;
 import com.kakaopay.investment.domain.item.dto.MyInvestmentItemRes;
 import com.kakaopay.investment.domain.item.entity.Item;
 import com.kakaopay.investment.domain.item.entity.QItem;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.LockModeType;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -27,6 +29,7 @@ public class InvestmentQueryRepository {
                 .from(investmentItem)
                 .join(investmentItem.item, QItem.item)
                 .where(QItem.item.id.eq(item.getId()))
+                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
                 .fetchOne();
 
         return result;
@@ -44,7 +47,6 @@ public class InvestmentQueryRepository {
                 .join(investmentItem.item, item)
                 .where(member.id.eq(memberId))
                 .fetch();
-
         return itemList;
     }
 
@@ -60,9 +62,23 @@ public class InvestmentQueryRepository {
                 item.finishedAt))
                 .from(investmentItem)
                 .join(investmentItem.item, item)
-                .where(item.startedAt.goe(startDateTime).and(item.finishedAt.loe(finishedDateTime)))
+                .where(searchBetweenDate(startDateTime, finishedDateTime))
                 .groupBy(item.id)
                 .fetch();
         return result;
+    }
+
+
+    public BooleanBuilder searchBetweenDate(LocalDateTime startDateTime, LocalDateTime finishedDateTime) {
+        BooleanBuilder builder = new BooleanBuilder();
+
+        if (startDateTime != null) {
+            builder.and(item.startedAt.goe(startDateTime));
+        }
+
+        if (finishedDateTime != null) {
+            builder.and(item.finishedAt.loe(finishedDateTime));
+        }
+        return builder;
     }
 }

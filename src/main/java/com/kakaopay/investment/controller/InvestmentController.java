@@ -28,9 +28,10 @@ public class InvestmentController {
         return new ResponseEntity(result, HttpStatus.OK);
     }
 
+    // do invest
     @PostMapping(value = "/api/investment", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public ResponseEntity<InvestmentItemRes> investItem(@Valid @RequestBody final InvestmentItemReq investmentItemReq, HttpServletRequest request) {
+    public ResponseEntity<InvestmentItemRes> doInvestItem(@Valid @RequestBody final InvestmentItemReq investmentItemReq, HttpServletRequest request) {
         String memberId = request.getHeader("X-USER-ID");
         log.info("memberId: {}", memberId);
         log.info("investItemReq: {}", investmentItemReq);
