@@ -5,12 +5,12 @@ import com.kakaopay.investment.domain.item.dto.MyInvestmentItemRes;
 import com.kakaopay.investment.domain.item.entity.InvestmentItem;
 import com.kakaopay.investment.domain.item.entity.Item;
 import com.kakaopay.investment.domain.item.entity.QItem;
+import com.kakaopay.investment.domain.item.service.ItemService;
 import com.kakaopay.investment.domain.member.entity.Member;
 import com.kakaopay.investment.domain.member.entity.QMember;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.assertj.core.api.Assertions;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.runner.RunWith;
@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +26,10 @@ import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
 import static com.kakaopay.investment.domain.item.entity.QInvestmentItem.investmentItem;
@@ -42,16 +47,18 @@ public class InvestmentItemTests {
     private EntityManager em;
     private JPAQueryFactory queryFactory;
 
-    @Before
+    @Autowired
+    private ItemService itemService;
+
     public void setUp() {
         queryFactory = new JPAQueryFactory(em);
         Member member = queryFactory.selectFrom(QMember.member)
-                                    .where(QMember.member.id.eq(1L))
-                                    .fetchOne();
+                .where(QMember.member.id.eq(1L))
+                .fetchOne();
 
         Item item = queryFactory.selectFrom(QItem.item)
-                                .where(QItem.item.id.eq(1L))
-                                .fetchOne();
+                .where(QItem.item.id.eq(1L))
+                .fetchOne();
 
         IntStream.range(1, 9)
                 .forEach(index -> {
@@ -87,7 +94,7 @@ public class InvestmentItemTests {
                 item.total_investing_amount.as("totalInvestingAmount"),
                 investmentItem.investing_amount.as("myInvestingAmount"),
                 investmentItem.startedAt.as("startedAt")
-                ))
+        ))
                 .from(investmentItem)
                 .join(investmentItem.member, member)
                 .join(investmentItem.item, item)
@@ -105,41 +112,41 @@ public class InvestmentItemTests {
                 });
 
         //then
-     }
+    }
 
-      @Test
-      public void 전체_투자상품_조회_테스트() throws Exception {
+    @Test
+    public void 전체_투자상품_조회_테스트() throws Exception {
 
-          //given
-          String startDate = "2021-03-13 21:30:10";
-          String finishedDate = "2021-06-01 23:59:59";
+        //given
+        String startDate = "2021-03-13 21:30:10";
+        String finishedDate = "2021-06-01 23:59:59";
 
-          LocalDateTime startDateTime = getLocalDateTime(startDate);
-          LocalDateTime finishedDateTime = getLocalDateTime(finishedDate);
+        LocalDateTime startDateTime = getLocalDateTime(startDate);
+        LocalDateTime finishedDateTime = getLocalDateTime(finishedDate);
 
-          //when
-          List<InvestmentItemDateRes> result = queryFactory.select(Projections.constructor(InvestmentItemDateRes.class,
-                  item.id.as("id"),
-                  item.title.as("title"),
-                  item.total_investing_amount.as("totalInvestingAmount"),
-                  investmentItem.investing_amount.sum().coalesce(0L).as("currentInvestingAmount"),
-                  investmentItem.count().as("investorCount"),
-                  item.itemStatus.as("investingStatus"),
-                  item.startedAt,
-                  item.finishedAt
-                  ))
-                  .from(investmentItem)
-                  .join(investmentItem.item, item)
-                  .where(item.startedAt.goe(startDateTime).and(item.finishedAt.loe(finishedDateTime)))
-                  .groupBy(item.id)
-                  .fetch();
+        //when
+        List<InvestmentItemDateRes> result = queryFactory.select(Projections.constructor(InvestmentItemDateRes.class,
+                item.id.as("id"),
+                item.title.as("title"),
+                item.total_investing_amount.as("totalInvestingAmount"),
+                investmentItem.investing_amount.sum().coalesce(0L).as("currentInvestingAmount"),
+                investmentItem.count().as("investorCount"),
+                item.itemStatus.as("investingStatus"),
+                item.startedAt,
+                item.finishedAt
+        ))
+                .from(investmentItem)
+                .join(investmentItem.item, item)
+                .where(item.startedAt.goe(startDateTime).and(item.finishedAt.loe(finishedDateTime)))
+                .groupBy(item.id)
+                .fetch();
 
-          //then
-          result.forEach(item -> {
-              logger.info(item.toString());
-          });
+        //then
+        result.forEach(item -> {
+            logger.info(item.toString());
+        });
 
-       }
+    }
 
     private LocalDateTime getLocalDateTime(String currentDate) {
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -152,14 +159,29 @@ public class InvestmentItemTests {
     @DisplayName("투자금액 줄여보기(멀티스레드) 테스트")
     public void 투자금액_줄이기_테스트() throws Exception {
         //given
-        
-
-
-
+        AtomicInteger successCount = new AtomicInteger();
+        int numberOfExecute = 100;
+        CountDownLatch latch = new CountDownLatch(numberOfExecute);
+        ExecutorService service = Executors.newFixedThreadPool(10);
 
         //when
+        for (int i = 0; i < numberOfExecute; i++) {
+            service.execute(() -> {
+                try {
+                    itemService.decreaseTotalAmount("부동산 포트폴리오", 10000L);
+                    successCount.getAndIncrement();
+                    System.out.println("성공");
+                } catch (ObjectOptimisticLockingFailureException oe) {
+                    System.out.println("충돌감지");
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                }
+                latch.countDown();
+            });
+        }
 
+        latch.await();
         //then
-     }
-
+        Assertions.assertThat(successCount.get()).isEqualTo(100);
+    }
 }
