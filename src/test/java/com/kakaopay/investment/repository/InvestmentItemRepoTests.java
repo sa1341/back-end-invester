@@ -36,12 +36,12 @@ public class InvestmentItemRepoTests {
                               .build();
         Item item = Item.builder()
                         .title("개인신용 포트폴리오")
-                        .total_investing_amount(1000000L)
+                        .totalInvestingAmount(1000000L)
                         .itemStatus(ItemStatus.IN_PROGRESS)
                         .build();
 
         InvestmentItem investmentItem = InvestmentItem.builder()
-                                                      .investing_amount(100000L)
+                                                      .investingAmount(100000L)
                                                       .build();
 
         investmentItem.addItem(item);
@@ -62,12 +62,12 @@ public class InvestmentItemRepoTests {
          InvestmentItem investmentItem = em.find(InvestmentItem.class, 1L);
 
          //when
-         logger.info("investingAmount: {}",investmentItem.getInvesting_amount());
+         logger.info("investingAmount: {}",investmentItem.getInvestingAmount());
          logger.info("itemTitle: {}", investmentItem.getItem().getTitle());
          logger.info("email: {}", investmentItem.getMember().getEmail());
 
          //then
-         Assertions.assertThat(investmentItem.getInvesting_amount()).isEqualTo(100000L);
+         Assertions.assertThat(investmentItem.getInvestingAmount()).isEqualTo(100000L);
          Assertions.assertThat(investmentItem.getItem().getTitle()).isEqualTo("개인신용 포트폴리오");
          Assertions.assertThat(investmentItem.getMember().getEmail()).isEqualTo("a79007714@gmail.com");
       }

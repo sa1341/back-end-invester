@@ -24,13 +24,13 @@ public class ItemService {
     public Long decreaseTotalAmount(String title, Long amount) {
         Item item = itemRepository.findWithTitleForUpdate(title);
         item.decreaseTotalAmount(amount);
-        return item.getTotal_investing_amount();
+        return null;
     }
 
 
     @Transactional
     public Long currentTotalAmount(String title) {
         Item item = itemRepository.findByTitle(title);
-        return item.getTotal_investing_amount();
+        return null;
     }
 }

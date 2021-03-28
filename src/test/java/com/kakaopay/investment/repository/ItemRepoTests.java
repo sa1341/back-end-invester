@@ -26,12 +26,12 @@ public class ItemRepoTests {
     public void setUp() {
         Item item1 = Item.builder()
                         .title("개인 신용 포트폴리오")
-                        .total_investing_amount(1000000L)
+                        .totalInvestingAmount(1000000L)
                         .build();
 
         Item item2 = Item.builder()
                 .title("부동산 포트폴리오")
-                .total_investing_amount(5000000L)
+                .totalInvestingAmount(5000000L)
                 .build();
 
         itemRepository.save(item1);

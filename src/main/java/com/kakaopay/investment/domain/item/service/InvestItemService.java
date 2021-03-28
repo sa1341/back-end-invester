@@ -31,6 +31,7 @@ public class InvestItemService {
     private final ItemRepository itemRepository;
     private final InvestmentQueryRepository investmentQueryRepository;
 
+
     /**
      * 전체 투자 상품 조회 API
      * @param investmentItemDateReq (상품 모집 기간(started_at, finished_at))
@@ -54,15 +55,11 @@ public class InvestItemService {
      */
     @Transactional
     public InvestmentItemRes investItem(final String memberId, final InvestmentItemReq investmentItemReq) {
-        // 회원, 상품 엔티티 식별 값으로 리포지토리로 조회하여  검증 함.
         Member member = findExistingMember(memberRepository, Long.valueOf(memberId));
         Item item = findExistingItem(itemRepository, investmentItemReq.getItemId());
-        // 사용자가 현재 투자할 금액 조회
         Long investingAmount = investmentItemReq.getInvestingAmount();
-        // 누적 투자 금액 조회 메서드
-        Long accumulatedAmount = investmentQueryRepository.getAccumulatedAmount(item);
-        log.info("investingAmount: {}, accumulatedAmount: {}", investingAmount, accumulatedAmount);
-        InvestmentItem investmentItem = item.createInvestmentItem(investingAmount, accumulatedAmount);
+        List<InvestmentItem> investmentItems = investmentQueryRepository.fetchInvestmentItems(item);
+        InvestmentItem investmentItem = item.createInvestmentItem(investingAmount, investmentItems);
         String result = saveInvestmentItem(member, investmentItem);
         InvestmentItemRes investmentItemRes = InvestmentItemRes.create(result);
         return investmentItemRes;

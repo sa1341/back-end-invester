@@ -2,6 +2,7 @@ package com.kakaopay.investment.domain.item.repository;
 
 import com.kakaopay.investment.domain.item.dto.InvestmentItemDateRes;
 import com.kakaopay.investment.domain.item.dto.MyInvestmentItemRes;
+import com.kakaopay.investment.domain.item.entity.InvestmentItem;
 import com.kakaopay.investment.domain.item.entity.Item;
 import com.kakaopay.investment.domain.item.entity.QItem;
 import com.querydsl.core.BooleanBuilder;
@@ -10,7 +11,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.LockModeType;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -24,14 +24,13 @@ public class InvestmentQueryRepository {
 
     private final JPAQueryFactory queryFactory;
 
-    public Long getAccumulatedAmount(Item item) {
-        Long result = queryFactory.select(investmentItem.investing_amount.sum().coalesce(0L))
+    public List<InvestmentItem> fetchInvestmentItems(Item item) {
+        List<InvestmentItem> result = queryFactory.select(investmentItem)
                 .from(investmentItem)
                 .join(investmentItem.item, QItem.item)
-                .where(QItem.item.id.eq(item.getId()))
-                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
-                .fetchOne();
-
+                .fetchJoin()
+                .where(QItem.item.id.eq(1L))
+                .fetch();
         return result;
     }
 
@@ -39,8 +38,8 @@ public class InvestmentQueryRepository {
         List<MyInvestmentItemRes> itemList = queryFactory.select(Projections.constructor(MyInvestmentItemRes.class,
                 item.id.as("id"),
                 item.title.as("title"),
-                item.total_investing_amount.as("totalInvestingAmount"),
-                investmentItem.investing_amount.as("myInvestingAmount"),
+                item.totalInvestingAmount.as("totalInvestingAmount"),
+                investmentItem.investingAmount.as("myInvestingAmount"),
                 investmentItem.startedAt.as("startedAt")))
                 .from(investmentItem)
                 .join(investmentItem.member, member)
@@ -54,8 +53,8 @@ public class InvestmentQueryRepository {
         List<InvestmentItemDateRes> result = queryFactory.select(Projections.constructor(InvestmentItemDateRes.class,
                 item.id.as("id"),
                 item.title.as("title"),
-                item.total_investing_amount.as("totalInvestingAmount"),
-                investmentItem.investing_amount.sum().coalesce(0L).as("currentInvestingAmount"),
+                item.totalInvestingAmount.as("totalInvestingAmount"),
+                investmentItem.investingAmount.sum().coalesce(0L).as("currentInvestingAmount"),
                 investmentItem.count().as("investorCount"),
                 item.itemStatus.as("investingStatus"),
                 item.startedAt,

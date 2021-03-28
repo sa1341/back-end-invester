@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -23,7 +24,7 @@ public class Item extends BaseTimeEntity {
 
     private String title;
 
-    private Long total_investing_amount;
+    private Long totalInvestingAmount;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
@@ -33,9 +34,9 @@ public class Item extends BaseTimeEntity {
     private LocalDateTime finishedAt;
 
     @Builder
-    public Item(String title, Long total_investing_amount, String finishedAt, ItemStatus itemStatus) {
+    public Item(String title, Long totalInvestingAmount, String finishedAt, ItemStatus itemStatus) {
         this.title = title;
-        this.total_investing_amount = total_investing_amount;
+        this.totalInvestingAmount = totalInvestingAmount;
         this.finishedAt = convertLocalDateTime(finishedAt);
         this.itemStatus = itemStatus;
     }
@@ -46,12 +47,15 @@ public class Item extends BaseTimeEntity {
     }
 
     // 총 투자 모금 금액과 누적 금액을 뺀 나머지 투자금액이랑 회원이 투자하려는 금액을 비교하여 InvestmentItem 엔티티의 생성 유무를 결정 함.
-    public InvestmentItem createInvestmentItem(Long investingAmount, Long accumulatedAmount) {
-        Long remainingAmount = this.total_investing_amount - accumulatedAmount;
+    public InvestmentItem createInvestmentItem(Long investingAmount, List<InvestmentItem> investmentItems) {
+        Long accumulatedAmount = investmentItems.stream()
+                                                .mapToLong(InvestmentItem::getInvestingAmount)
+                                                .sum();
+        Long remainingAmount = this.totalInvestingAmount - accumulatedAmount;
 
         if (remainingAmount >= investingAmount) {
             InvestmentItem investmentItem = InvestmentItem.builder()
-                    .investing_amount(investingAmount)
+                    .investingAmount(investingAmount)
                     .build();
             investmentItem.addItem(this);
             if (remainingAmount.equals(investingAmount)) {
@@ -67,9 +71,9 @@ public class Item extends BaseTimeEntity {
     }
 
     public Long decreaseTotalAmount(Long price) {
-        if (this.total_investing_amount - price < 0) {
+        if (this.totalInvestingAmount - price < 0) {
             throw new IllegalArgumentException("가격이 너무 부족해");
         }
-        return this.total_investing_amount -= price;
+        return this.totalInvestingAmount -= price;
     }
 }

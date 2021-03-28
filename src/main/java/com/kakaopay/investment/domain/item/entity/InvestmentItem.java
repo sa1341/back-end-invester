@@ -19,7 +19,7 @@ public class InvestmentItem extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long investing_amount;
+    private Long investingAmount;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
@@ -30,8 +30,8 @@ public class InvestmentItem extends BaseTimeEntity {
     private Item item;
 
     @Builder
-    public InvestmentItem(Long investing_amount) {
-        this.investing_amount = investing_amount;
+    public InvestmentItem(Long investingAmount) {
+        this.investingAmount = investingAmount;
     }
 
     public void addMember(Member member) {
