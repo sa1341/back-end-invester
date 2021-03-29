@@ -3,6 +3,7 @@ package com.kakaopay.investment.domain.item.service;
 import com.kakaopay.investment.domain.item.dto.*;
 import com.kakaopay.investment.domain.item.entity.InvestmentItem;
 import com.kakaopay.investment.domain.item.entity.Item;
+import com.kakaopay.investment.domain.item.repository.InvestmentAmountRepository;
 import com.kakaopay.investment.domain.item.repository.InvestmentItemRepository;
 import com.kakaopay.investment.domain.item.repository.InvestmentQueryRepository;
 import com.kakaopay.investment.domain.item.repository.ItemRepository;
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.kakaopay.investment.domain.item.service.InvestmentHelperService.findExistingItem;
+import static com.kakaopay.investment.domain.item.service.InvestmentHelperService.getAccumulatedAmount;
 import static com.kakaopay.investment.domain.member.service.MemberHelperService.findExistingMember;
 
 @Slf4j
@@ -30,7 +32,7 @@ public class InvestItemService {
     private final MemberRepository memberRepository;
     private final ItemRepository itemRepository;
     private final InvestmentQueryRepository investmentQueryRepository;
-
+    private final InvestmentAmountRepository amountRepository;
 
     /**
      * 전체 투자 상품 조회 API
@@ -57,9 +59,12 @@ public class InvestItemService {
     public InvestmentItemRes investItem(final String memberId, final InvestmentItemReq investmentItemReq) {
         Member member = findExistingMember(memberRepository, Long.valueOf(memberId));
         Item item = findExistingItem(itemRepository, investmentItemReq.getItemId());
+
         Long investingAmount = investmentItemReq.getInvestingAmount();
         List<InvestmentItem> investmentItems = investmentQueryRepository.fetchInvestmentItems(item);
-        InvestmentItem investmentItem = item.createInvestmentItem(investingAmount, investmentItems);
+        Long accumulatedAmount = getAccumulatedAmount(investmentItems);
+
+        InvestmentItem investmentItem = item.createInvestmentItem(investingAmount, accumulatedAmount);
         String result = saveInvestmentItem(member, investmentItem);
         InvestmentItemRes investmentItemRes = InvestmentItemRes.create(result);
         return investmentItemRes;

@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -47,10 +46,7 @@ public class Item extends BaseTimeEntity {
     }
 
     // 총 투자 모금 금액과 누적 금액을 뺀 나머지 투자금액이랑 회원이 투자하려는 금액을 비교하여 InvestmentItem 엔티티의 생성 유무를 결정 함.
-    public InvestmentItem createInvestmentItem(Long investingAmount, List<InvestmentItem> investmentItems) {
-        Long accumulatedAmount = investmentItems.stream()
-                                                .mapToLong(InvestmentItem::getInvestingAmount)
-                                                .sum();
+        public InvestmentItem createInvestmentItem(Long investingAmount, Long accumulatedAmount) {
         Long remainingAmount = this.totalInvestingAmount - accumulatedAmount;
 
         if (remainingAmount >= investingAmount) {

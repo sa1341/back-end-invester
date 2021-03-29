@@ -11,6 +11,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.LockModeType;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -30,6 +31,7 @@ public class InvestmentQueryRepository {
                 .join(investmentItem.item, QItem.item)
                 .fetchJoin()
                 .where(QItem.item.id.eq(1L))
+                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
                 .fetch();
         return result;
     }
