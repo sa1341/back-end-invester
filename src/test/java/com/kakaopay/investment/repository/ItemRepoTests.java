@@ -1,8 +1,8 @@
 package com.kakaopay.investment.repository;
 
 import com.kakaopay.investment.domain.item.entity.Item;
-import com.kakaopay.investment.domain.item.exception.ItemNotFoundException;
 import com.kakaopay.investment.domain.item.repository.ItemRepository;
+import com.kakaopay.investment.domain.item.status.ItemStatus;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,36 +25,22 @@ public class ItemRepoTests {
     @Before
     public void setUp() {
         Item item1 = Item.builder()
-                        .title("개인 신용 포트폴리오")
+                        .title("개인신용 포트폴리오")
                         .totalInvestingAmount(1000000L)
+                        .itemStatus(ItemStatus.IN_PROGRESS)
+                        .finishedAt("2021-09-30 23:59:59")
                         .build();
 
-        Item item2 = Item.builder()
-                .title("부동산 포트폴리오")
-                .totalInvestingAmount(5000000L)
-                .build();
-
         itemRepository.save(item1);
-        itemRepository.save(item2);
     }
 
-    @Test(expected = ItemNotFoundException.class)
+    @Test
     public void item_조회_테스트() throws Exception {
         //given
-        Optional<Item> optionalItem1 = itemRepository.findById(3L);
-        Optional<Item> optionalItem2 = itemRepository.findById(2L);
-
+        Optional<Item> optionalItem1 = itemRepository.findById(1L);
         //when
         Item item1 = optionalItem1.orElse(null);
-        Item item2 = optionalItem2.orElse(null);
-
-        if (item1 == null || item2 == null) {
-            throw new ItemNotFoundException();
-        }
-
         //then
-        Assertions.assertThat(item1.getTitle()).isEqualTo("개인 신용 포트폴리오");
-        Assertions.assertThat(item2.getTitle()).isEqualTo("부동산 포트폴리오");
+        Assertions.assertThat(item1.getTitle()).isEqualTo("개인신용 포트폴리오");
      }
-
 }

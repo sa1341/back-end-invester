@@ -14,13 +14,11 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,15 +26,10 @@ import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.kakaopay.investment.domain.item.entity.QInvestmentItem.investmentItem;
 import static com.kakaopay.investment.domain.item.entity.QItem.item;
 import static com.kakaopay.investment.domain.member.entity.QMember.member;
-import static org.assertj.core.api.Assertions.assertThat;
 
 @Transactional
 @RunWith(SpringRunner.class)
@@ -72,7 +65,7 @@ public class InvestmentItemTests {
         createInvestmentItems(member, item);
     }
 
-    @Test
+ /*   @Test
     public void 누적투자금액을_구한다() throws Exception {
         List<InvestmentItem> result = queryFactory.select(investmentItem)
                 .from(investmentItem)
@@ -86,7 +79,7 @@ public class InvestmentItemTests {
                 .sum();
 
         assertThat(accumulatedAmount).isEqualTo(180000);
-    }
+    }*/
 
     @Test
     public void 나의_투자상품_조회_테스트() throws Exception {
@@ -159,35 +152,6 @@ public class InvestmentItemTests {
     }
 
 
-    @Test
-    @DisplayName("투자금액 줄여보기(멀티스레드) 테스트")
-    public void 투자금액_줄이기_테스트() throws Exception {
-        //given
-        AtomicInteger successCount = new AtomicInteger();
-        int numberOfExecute = 100;
-        CountDownLatch latch = new CountDownLatch(numberOfExecute);
-        ExecutorService service = Executors.newFixedThreadPool(10);
-
-        //when
-        for (int i = 0; i < numberOfExecute; i++) {
-            service.execute(() -> {
-                try {
-                    itemService.decreaseTotalAmount("부동산 포트폴리오", 10000L);
-                    successCount.getAndIncrement();
-                    System.out.println("성공");
-                } catch (ObjectOptimisticLockingFailureException oe) {
-                    System.out.println("충돌감지");
-                } catch (Exception e) {
-                    System.out.println(e.getMessage());
-                }
-                latch.countDown();
-            });
-        }
-
-        latch.await();
-        //then
-        assertThat(successCount.get()).isEqualTo(100);
-    }
 
     private static void createMember(MemberService memberService) {
         Member member1 = Member.builder()

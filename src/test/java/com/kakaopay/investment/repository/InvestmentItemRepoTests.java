@@ -38,6 +38,7 @@ public class InvestmentItemRepoTests {
                         .title("개인신용 포트폴리오")
                         .totalInvestingAmount(1000000L)
                         .itemStatus(ItemStatus.IN_PROGRESS)
+                        .finishedAt("2021-09-30 23:59:59")
                         .build();
 
         InvestmentItem investmentItem = InvestmentItem.builder()
@@ -52,8 +53,6 @@ public class InvestmentItemRepoTests {
          em.persist(member);
          em.persist(item);
          em.persist(investmentItem);
-
-        logger.info("Persistence Context End!!!");
      }
 
      @Test

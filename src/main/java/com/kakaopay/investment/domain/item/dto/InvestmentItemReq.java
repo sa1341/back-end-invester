@@ -15,4 +15,20 @@ public class InvestmentItemReq {
     private Long itemId;
     @NotNull(message = "투자 금액은 필수입니다.")
     private Long investingAmount;
+
+    public Long getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Long itemId) {
+        this.itemId = itemId;
+    }
+
+    public Long getInvestingAmount() {
+        return investingAmount;
+    }
+
+    public void setInvestingAmount(Long investingAmount) {
+        this.investingAmount = investingAmount;
+    }
 }

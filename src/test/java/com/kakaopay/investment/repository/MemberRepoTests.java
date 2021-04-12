@@ -29,32 +29,19 @@ public class MemberRepoTests {
                 .name("임준영")
                 .email("a79007714@gmail.com")
                 .build();
-
-        Member member2 = Member.builder()
-                .name("김참이")
-                .email("ahffkdbfkrql@naver.com")
-                .build();
-
         memberRepository.save(member1);
-        memberRepository.save(member2);
     }
 
 
-    @Test(expected = MemberNotFoundException.class)
+  @Test()
     public void 회원정보_조회_테스트() throws Exception {
         //given
-        Long memberId1 = null;
-        Long memberId2 = 2L;
+        Long memberId1 = 1L;
         //when
         Optional<Member> optionalMember1 = memberRepository.findById(memberId1);
-        Optional<Member> optionalMember2 = memberRepository.findById(memberId1);
 
         //then
-
         Member findMember1 = optionalMember1.orElseThrow(() -> new MemberNotFoundException());
         assertThat(findMember1.getEmail()).isEqualTo("a79007714@gmail.com");
-
-        Member findMember2 = optionalMember2.orElseThrow(() -> new MemberNotFoundException());
-        assertThat(findMember2.getEmail()).isEqualTo("ahffkdbfkrql@naver.com");
     }
 }

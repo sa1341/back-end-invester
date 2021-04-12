@@ -1,0 +1,24 @@
+ifndef::snippets[]
+:snippets: ../../../build/generated-snippets
+endif::[]
+:doctype: investment
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+:sectlinks:
+:operation-http-request-title: Example Request
+:operation-http-response-title: Example Response
+
+[[resources]]
+= Resources
+
+[[resources-investment]]
+== Investment
+
+[[resources-investment]]
+=== 정보 가져 오기
+include::{snippets}/investment/http-request.adoc[]
+include::{snippets}/investment/http-response.adoc[]
+include::{snippets}/investment/response-fields.adoc[]
+include::{snippets}/investment/request-fields.adoc[]
